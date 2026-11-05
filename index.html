@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#163e36">
   <title>かたち工房 | OpenSCADコード生成</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="organizer.js"></script>
   <script defer src="fitting.js"></script>
   <script defer src="generator.js"></script>
   <script defer src="mesh.js"></script>
@@ -18,7 +19,7 @@
     <div class="intro"><p class="eyebrow">アイデアを、プリントできるかたちへ。</p><h1>寸法を入れて、<br>かたちをつくる。</h1><p>基本の形状からOpenSCADコードを生成。<br>すべての処理は、このブラウザの中で完結します。</p></div>
     <nav aria-label="形状を選択" id="shapes"></nav>
     <div class="workspace">
-      <section class="panel"><div class="panel-heading"><h2><span class="number">01</span> 寸法を設定</h2><span class="unit">単位 mm</span></div><p id="description"></p><form id="dimensions" novalidate></form><div class="field"><label for="segments">円の分割数</label><select id="segments"><option>24</option><option>48</option><option selected>96</option><option>192</option><option>384</option></select><p class="hint">多いほど円が滑らかになります。STL・プレビュー・コードで共通です。</p></div><div id="fitting-summary" hidden></div><div id="warnings" role="status" hidden></div><div id="errors" role="alert" hidden></div><p class="hint">寸法を変更すると、コードが自動で更新されます。</p></section>
+      <section class="panel"><div class="panel-heading"><h2><span class="number">01</span> 寸法を設定</h2><span class="unit">単位 mm</span></div><p id="description"></p><div id="organizer-controls" hidden><label for="organizer-kind">種類</label><select id="organizer-kind"><option value="tray">収納トレー（底板・外周壁あり）</option><option value="grid">格子仕切り（底板・外周壁なし）</option></select><p class="hint">高さは底板上から。ケースとのクリアランスは左右・前後の各側の隙間です。格子の外縁は開放され、マス数は配置の基準です。</p></div><div id="organizer-summary" role="status" hidden></div><form id="dimensions" novalidate></form><div class="field"><label for="segments">円の分割数</label><select id="segments"><option>24</option><option>48</option><option selected>96</option><option>192</option><option>384</option></select><p class="hint">多いほど円が滑らかになります。STL・プレビュー・コードで共通です。</p></div><div id="fitting-summary" hidden></div><div id="warnings" role="status" hidden></div><div id="errors" role="alert" hidden></div><p class="hint">寸法を変更すると、コードが自動で更新されます。</p></section>
       <section class="panel preview-panel" aria-labelledby="preview-heading">
         <div class="panel-heading"><h2 id="preview-heading"><span class="number">02</span> 3Dプレビュー</h2><span class="unit">比率どおりに表示</span></div>
         <div id="assembly-controls" hidden><button type="button" data-assembly="separate" aria-pressed="true">分離</button><button type="button" data-assembly="assembled" aria-pressed="false">組み立て</button><p class="hint">A：金色（凸） / B：青色（凹）</p></div><div id="preview" aria-label="3Dモデル。1本指で回転、2本指で拡大・縮小" role="img"></div>

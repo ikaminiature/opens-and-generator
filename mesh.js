@@ -1,6 +1,10 @@
 (function (root) {
   // mm座標、Z上向き。プレビューとSTLで共有する境界面だけのメッシュ。
   function createMesh(type, v, segments = 96) {
+    if (type === 'tray' || type === 'grid') {
+      const organizer = typeof module !== 'undefined' && module.exports ? require('./organizer') : root.Organizer;
+      return organizer.createMesh(v, type);
+    }
     if (!Number.isInteger(segments) || segments < 12 || segments > 384 || segments % 4) throw new Error('円の分割数は12〜384の4の倍数にしてください。');
     const vertices = [], faces = [];
     const vertex = (x, y, z) => { vertices.push([x, y, z].map(Math.fround)); return vertices.length - 1; };
@@ -86,7 +90,7 @@
     return buffer;
   }
   function filename(type,v,segments) {
-    const fields={cylinder:['diameter','height'],disk:['diameter','height','hole'],block:['width','depth','height'],box:['width','depth','height','wall','bottom']}[type];
+    const fields={tray:['cellWidth','cellDepth','columns','rows','divider','wallHeight','outerWall','base'],grid:['cellWidth','cellDepth','columns','rows','divider','wallHeight'],cylinder:['diameter','height'],disk:['diameter','height','hole'],block:['width','depth','height'],box:['width','depth','height','wall','bottom']}[type];
     return `${type}_${fields.map(k=>`${k}-${Number(v[k])}`).join('_')}_mm${type==='disk'||type==='cylinder'?`_fn-${segments}`:''}.stl`;
   }
   const api={createMesh,validateMesh,toSTL,filename};

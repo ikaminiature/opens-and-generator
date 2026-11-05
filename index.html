@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#163e36">
+  <title>かたち工房 | OpenSCADコード生成</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="generator.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header><span class="brand">▧ かたち工房</span><span class="tag">OpenSCAD ジェネレーター</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">アイデアを、プリントできるかたちへ。</p><h1>寸法を入れて、<br>かたちをつくる。</h1><p>基本の形状からOpenSCADコードを生成。<br>すべての処理は、このブラウザの中で完結します。</p></div>
+    <nav aria-label="形状を選択" id="shapes"></nav>
+    <div class="workspace">
+      <section class="panel"><div class="panel-heading"><h2><span class="number">01</span> 寸法を設定</h2><span class="unit">単位 mm</span></div><p id="description"></p><form id="dimensions" novalidate></form><div id="errors" role="alert" hidden></div><p class="hint">寸法を変更すると、コードが自動で更新されます。</p></section>
+      <section class="panel output"><div class="panel-heading"><h2><span class="number">02</span> コードを使う</h2><span class="file-label">.scad</span></div><label class="sr-only" for="code">生成されたOpenSCADコード</label><textarea id="code" readonly spellcheck="false" wrap="off"></textarea><div class="actions"><button id="copy" type="button">コードをコピー</button><button id="save" type="button" class="secondary">.scad を保存 ↓</button></div><p id="status" role="status" aria-live="polite"></p></section>
+    </div>
+    <aside><strong>プリントするには？</strong><p>コードをOpenSCADで開き、レンダリング（F6）後にSTLを書き出してください。STLをスライサーで開くと、3Dプリントの準備ができます。</p></aside>
+    <footer>登録不要・通信不要・寸法はすべて mm <span>まずは、小さなかたちから。</span></footer>
+  </main>
+</body>
+</html>

@@ -6,7 +6,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   const state=await page.evaluate(()=>window.scadPreviewState);const v=Object.fromEntries(Object.entries(state.raw).map(([k,v])=>[k,k==='fillet'||k==='edit'?v:Number(v)]));
   const downloading=page.waitForEvent('download');await page.locator('#save-stl').click();const d=await downloading;assert.deepEqual(fs.readFileSync(await d.path()),Buffer.from(M.toSTL(M.createMesh(state.type,v))));
   await page.locator('#radius-vertical').fill('100');await page.locator('#radius-vertical').blur();assert.equal(await page.locator('#save-stl').isDisabled(),true);assert.match(await page.locator('#errors').textContent(),/大きすぎ/);
-  await page.locator('#radius-vertical').fill('2');await page.locator('#radius-vertical').blur();await page.locator('#fillet-top').check();assert.match(await page.locator('#errors').textContent(),/未対応/);await page.locator('#fillet-top').uncheck();
+  await page.locator('#radius-vertical').fill('2');await page.locator('#radius-vertical').blur();await page.locator('#fillet-top').check();await page.waitForFunction(()=>!!globalThis.Chamfer);assert.equal(await page.locator('#save-stl').isDisabled(),false);await page.locator('#fillet-top').uncheck();
  }
  await page.locator('[data-wall="v:0:0"]').tap();const e=await page.evaluate(()=>organizerUI.get().raw.edit);await page.locator('#fillet-vertical').uncheck();assert.deepEqual(await page.evaluate(()=>organizerUI.get().raw.edit),e);
  await page.locator('#fillet-vertical').check();await page.locator('#layout-store').click();await page.locator('#fillet-vertical').uncheck();await page.locator('#layout-restore').click();assert.equal(await page.locator('#fillet-vertical').isChecked(),true);

@@ -1,10 +1,10 @@
 (function(root){
- const entries=[['top','外周の上端',1],['vertical','外周の縦角',2],['bottom','外周の底面側エッジ',0.5],['divider','内部仕切りの上端',0.5]];
+ const entries=[['top','外周の上端（45度面取り）',0.5],['vertical','外周の縦角',2],['bottom','外周の底面側エッジ（45度面取り）',0.3],['divider','内部仕切りの上端（45度面取り）',0.3]];
  const defaults=()=>Object.fromEntries(entries.map(([k,,r])=>[k,{enabled:false,radius:r}]));
  function validate(type,v){
   const settings=v.fillet||defaults(),errors=[],warnings=[];
-  for(const [key,label]of entries){const s=settings[key];if(!s||typeof s.enabled!=='boolean'||typeof s.radius!=='number'||!Number.isFinite(s.radius)||s.radius<0){errors.push(`${label}の半径は0以上の数値で入力してください。`);continue;}
-   if(s.enabled&&s.radius>0&&(key!=='vertical'||type==='grid'))errors.push(`${label}はこの形状では未対応です。OFFまたは半径0にしてください。`);
+  for(const [key,label]of entries){const s=settings[key];if(!s||typeof s.enabled!=='boolean'||typeof s.radius!=='number'||!Number.isFinite(s.radius)||s.radius<0){errors.push(`${label}の値は0以上の数値で入力してください。`);continue;}
+   if(s.enabled&&s.radius>0&&((type==='grid'&&key!=='divider')||((type==='block'||type==='box')&&key==='divider')))errors.push(`${label}はこの形状では未対応です。OFFまたは半径0にしてください。`);
   }
   const r=settings.vertical?.enabled?settings.vertical.radius:0;
   if(r>0&&type!=='grid'){
@@ -13,10 +13,24 @@
    const limit=type==='block'?Math.min(w,d)/2:type==='box'?v.wall:v.outerWall;
    if(r>limit||r*2>=Math.min(w,d))errors.push(`外周縦角の半径が大きすぎます。この形状では${limit} mm以下、かつ幅・奥行きの半分未満にしてください。自動縮小はしません。`);
   }
+  const c=key=>settings[key]?.enabled?settings[key].radius:0;
+  const top=c('top'),bottom=c('bottom'),divider=c('divider');
+  const H=type==='tray'?v.wallHeight+v.base:type==='grid'?v.wallHeight:v.height;
+  if(r>0&&((top>0&&top>=r)||(bottom>0&&bottom>=r)))errors.push('丸い縦角との接続では、面取り幅を縦角フィレットの半径未満にしてください。この組み合わせは未対応です。');
+  if(top+bottom>=H)errors.push('上端と底面側の面取り幅の合計は高さ未満にしてください。');
+  if((type==='tray'||type==='box')&&top*2>Number(type==='tray'?v.outerWall:v.wall))errors.push('外周上端の面取り幅の2倍が外周壁厚を超えています。両側の面取りが干渉します。');
+  if((type==='tray'||type==='grid')&&divider*2>v.divider)errors.push('仕切り上端の面取り幅の2倍が仕切り厚を超えています。');
+  if(type==='tray'&&Math.max(top,divider)>=v.wallHeight)errors.push('上端の面取り幅は仕切り高さ未満にしてください。');
+  if(type==='grid'&&divider>=v.wallHeight)errors.push('面取り幅は仕切り高さ未満にしてください。');
+  if((type==='box'||type==='tray')&&bottom>=Number(type==='box'?v.bottom:v.base))errors.push('底面側の面取り幅は底板厚未満にしてください。');
+  if((type==='box'||type==='tray')&&bottom>Number(type==='box'?v.wall:v.outerWall))errors.push('底面側の面取り幅は外周壁厚以下にしてください。');
+  if(type==='block'&&2*Math.max(top,bottom)>=Math.min(v.width,v.depth))errors.push('面取り幅は幅・奥行きの半分未満にしてください。');
+  if(type==='grid'&&(c('top')||c('bottom')||r))warnings.push('格子には外周壁がありません。外周上端・底面側・縦角は適用できません。');
+  if((type==='block'||type==='box')&&divider)warnings.push('この形状には内部仕切りがありません。');
   if(errors.length)warnings.push(...errors);
-  return {errors,warnings,radius:r};
+  return {errors,warnings,radius:r,active:r>0||top>0||bottom>0||divider>0};
  }
- function mesh(type,v){
+ function verticalMesh(type,v){
   const check=validate(type,v);if(check.errors.length)throw new Error(check.errors.join(' '));
   const R=check.radius;if(!(R>0))return null;
   const O=typeof module!=='undefined'&&module.exports?require('./organizer'):root.Organizer;
@@ -58,6 +72,15 @@
   // No display transform is applied. Output is in original mm coordinates.
   return {vertices,faces};
  }
- function code(mesh){return `// 外周縦角フィレット / 単位:mm / STLと同じ96分割相当の境界メッシュ\npolyhedron(\n  points=${JSON.stringify(mesh.vertices)},\n  faces=${JSON.stringify(mesh.faces.map(f=>[...f].reverse()))},\n  convexity=20\n);\n`;}
+ function mesh(type,v){
+  const check=validate(type,v);if(check.errors.length)throw new Error(check.errors.join(' '));
+  let base=verticalMesh(type,v);
+  const settings=v.fillet||defaults(),hasChamfer=['top','bottom','divider'].some(k=>settings[k].enabled&&settings[k].radius>0);
+  if(!hasChamfer)return base;
+  if(!root.Chamfer)throw new Error(root.chamferLoadError||'面取りエンジンを準備中です。少し待ってください。');
+  if(!base){const M=typeof module!=='undefined'&&module.exports?require('./mesh'):root.ScadMesh;base=M.createMesh(type,{...v,fillet:undefined});}
+  return root.Chamfer.apply(type,v,base);
+ }
+ function code(mesh){return `// 縦角フィレット・45度面取り / 単位:mm / STLと同じ境界メッシュ\npolyhedron(\n  points=${JSON.stringify(mesh.vertices)},\n  faces=${JSON.stringify(mesh.faces.map(f=>[...f].reverse()))},\n  convexity=20\n);\n`;}
  const api={entries,defaults,validate,mesh,code};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.Fillet=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

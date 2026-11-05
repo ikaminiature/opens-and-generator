@@ -21,7 +21,7 @@ test('編集したトレーにも適用、内寸とレイアウトは維持',()=
  assert.ok(m.vertices.some(p=>p[0]===20.5));assert.ok(m.vertices.some(p=>p[0]===2&&p[1]===2));
 });
 test('未対応エッジ・負半径・薄壁を拒否し自動縮小しない',()=>{
- for(const key of ['top','bottom','divider']){const s=F.defaults();s[key].enabled=true;assert.ok(F.validate('tray',{...dims.tray,fillet:s}).errors.some(s=>s.includes('未対応')));}
+ for(const key of ['top','bottom','vertical']){const s=F.defaults();s[key].enabled=true;assert.ok(F.validate('grid',{...dims.grid,fillet:s}).errors.some(s=>s.includes('未対応')));}
  const s=F.defaults();s.vertical.enabled=true;s.vertical.radius=2;assert.ok(F.validate('box',{...dims.box,wall:0.5,fillet:s}).errors.length);assert.equal(s.vertical.radius,2);
  s.vertical.radius=-1;assert.ok(F.validate('block',{...dims.block,fillet:s}).errors.length);
 });

@@ -26,11 +26,11 @@
       const settings = drafts[current].fillet || Fillet.defaults();
       for(const [key] of Fillet.entries){$('fillet-'+key).checked=settings[key].enabled;if(document.activeElement!==$('radius-'+key))$('radius-'+key).value=Number.isFinite(settings[key].radius)?settings[key].radius:'';}
       if(!result.errors.length){
-        const check=Fillet.validate(actualType,{...result.values,...drafts[current]});
+        const check=Fillet.validate(actualType,{...result.values,...Object.fromEntries(Object.entries(drafts[current]).map(([k,v])=>[k,k==='fillet'||k==='edit'?v:Number(v)]))});
         result.errors.push(...check.errors);result.warnings=[...(result.warnings||[]),...check.warnings];
-        if(!check.errors.length&&check.radius>0){
+        if(!check.errors.length&&check.active){
           try{const m=Fillet.mesh(actualType,{...result.values,...Object.fromEntries(Object.entries(drafts[current]).map(([k,v])=>[k,k==='fillet'||k==='edit'?v:Number(v)]))});ScadMesh.validateMesh(m);result.code=Fillet.code(m);}
-          catch(e){result.errors.push('フィレットメッシュを生成できませんでした。半径を変更するかOFFにしてください。'+e.message);}
+          catch(e){result.errors.push('エッジ加工を生成できませんでした。設定を確認してください。'+e.message);}
         }
       }
     }

@@ -5,10 +5,11 @@
     block: { name: '直方体', fields: [['width', '幅', 40], ['depth', '奥行き', 30], ['height', '高さ', 20]] },
     box: { name: '中空の箱', fields: [['width', '外寸の幅', 60], ['depth', '外寸の奥行き', 40], ['height', '外寸の高さ', 30], ['wall', '壁厚', 2], ['bottom', '底面の厚さ', 2]] }
   };
-  function generate(type, raw) {
+  function generate(type, raw, segments = 96) {
     const shape = shapes[type];
     if (!shape) return { errors: ['形状を選択してください。'], code: '' };
     const values = {}, errors = [];
+    if (!Number.isInteger(segments) || segments < 12 || segments > 384 || segments % 4) errors.push('円の分割数は12〜384の4の倍数にしてください。');
     for (const [key, label] of shape.fields) {
       const input = raw[key];
       const value = Number(input);
@@ -26,7 +27,7 @@
       }
     }
     if (errors.length) return { errors, code: '' };
-    const header = `// ${shape.name} / 単位: mm\n$fn = 96;\n\n`;
+    const header = `// ${shape.name} / 単位: mm\n$fn = ${segments};\n\n`;
     let body;
     if (type === 'cylinder') body = `cylinder(d = ${diameter}, h = ${height});`;
     if (type === 'block') body = `cube([${width}, ${depth}, ${height}]);`;

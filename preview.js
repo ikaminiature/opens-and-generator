@@ -50,7 +50,7 @@ try {
       status.textContent = '寸法を修正すると3Dプレビューを表示します。'; draw(); return;
     }
     const v = Object.fromEntries(Object.entries(state.raw).map(([k, value]) => [k, Number(value)]));
-    model = createModel(state.type, v, material);
+    model = createModel(state.type, v, material, state.segments);
     const bounds = new THREE.Box3().setFromObject(model), size = bounds.getSize(new THREE.Vector3());
     const scale = 1 / Math.max(size.x, size.y, size.z);
     const center = bounds.getCenter(new THREE.Vector3());

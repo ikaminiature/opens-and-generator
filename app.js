@@ -12,13 +12,13 @@
     $('shapes').append(button);
   }
   function update() {
-    const { code, errors } = generate(current, drafts[current]);
+    const { code, errors } = generate(current, drafts[current], Number($('segments').value));
     $('code').value = code;
     $('errors').replaceChildren(...errors.map(message => { const p = document.createElement('p'); p.textContent = message; return p; }));
     $('errors').hidden = !errors.length;
-    $('copy').disabled = $('save').disabled = !!errors.length;
+    $('copy').disabled = $('save').disabled = $('save-stl').disabled = !!errors.length;
     $('status').textContent = '';
-    window.scadPreviewState = { type: current, raw: { ...drafts[current] }, valid: !errors.length };
+    window.scadPreviewState = { type: current, raw: { ...drafts[current] }, valid: !errors.length, segments: Number($('segments').value) };
     window.dispatchEvent(new Event('scad-preview-update'));
   }
   function render() {
@@ -36,6 +36,7 @@
     }
     update();
   }
+  $('segments').addEventListener('change', update);
   $('dimensions').addEventListener('submit', e => e.preventDefault());
   $('copy').addEventListener('click', async () => {
     try {
@@ -50,6 +51,18 @@
     link.href = url; link.download = `${current}.scad`; document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
     $('status').textContent = '保存を開始しました。Safariのダウンロード一覧をご確認ください。';
+  });
+  $('save-stl').addEventListener('click', () => {
+    try {
+      const v = Object.fromEntries(Object.entries(drafts[current]).map(([k, value]) => [k, Number(value)]));
+      const segments = Number($('segments').value);
+      const blob = new Blob([ScadMesh.toSTL(ScadMesh.createMesh(current, v, segments))], { type: 'model/stl' });
+      const url = URL.createObjectURL(blob), link = document.createElement('a');
+      link.href = url; link.download = ScadMesh.filename(current, v, segments);
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      $('status').textContent = 'STLの保存を開始しました。Safariのダウンロード一覧、または「ファイル」アプリをご確認ください。';
+    } catch (error) { $('status').textContent = `STLを保存できませんでした。${error.message}`; }
   });
   render();
 })();

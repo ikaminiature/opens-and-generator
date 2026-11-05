@@ -1,6 +1,10 @@
 (function (root) {
   // mm座標、Z上向き。プレビューとSTLで共有する境界面だけのメッシュ。
   function createMesh(type, v, segments = 96) {
+    if (['block','box','tray','grid'].includes(type) && v.fillet) {
+      const F = typeof module !== 'undefined' && module.exports ? require('./fillet') : root.Fillet;
+      const rounded = F.mesh(type,v); if (rounded) return rounded;
+    }
     if (type === 'tray' || type === 'grid') {
       const organizer = typeof module !== 'undefined' && module.exports ? require('./organizer') : root.Organizer;
       return organizer.createMesh(v, type);

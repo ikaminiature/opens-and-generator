@@ -19,6 +19,21 @@
     const kind = $('organizer-kind').value;
     if (organizer) window.layoutEditor?.prepare(drafts.organizer);
     const result = organizer ? Organizer.generate(drafts[current], kind) : fitting ? Fitting.generate(drafts[current], Number($('segments').value)) : generate(current, drafts[current], Number($('segments').value));
+    const actualType = organizer ? kind : current;
+    const supported = ['block','box','tray','grid'].includes(actualType);
+    $('fillet-controls').hidden = !supported;
+    if(supported){
+      const settings = drafts[current].fillet || Fillet.defaults();
+      for(const [key] of Fillet.entries){$('fillet-'+key).checked=settings[key].enabled;if(document.activeElement!==$('radius-'+key))$('radius-'+key).value=Number.isFinite(settings[key].radius)?settings[key].radius:'';}
+      if(!result.errors.length){
+        const check=Fillet.validate(actualType,{...result.values,...drafts[current]});
+        result.errors.push(...check.errors);result.warnings=[...(result.warnings||[]),...check.warnings];
+        if(!check.errors.length&&check.radius>0){
+          try{const m=Fillet.mesh(actualType,{...result.values,...Object.fromEntries(Object.entries(drafts[current]).map(([k,v])=>[k,k==='fillet'||k==='edit'?v:Number(v)]))});ScadMesh.validateMesh(m);result.code=Fillet.code(m);}
+          catch(e){result.errors.push('フィレットメッシュを生成できませんでした。半径を変更するかOFFにしてください。'+e.message);}
+        }
+      }
+    }
     const { errors } = result;
     window.layoutEditor?.render(organizer, drafts.organizer, kind, result);
     $('organizer-controls').hidden = !organizer;
@@ -30,7 +45,7 @@
       $('organizer-summary').textContent = `外寸 ${f(l.width)} × ${f(l.depth)} × ${f(l.height)} mm / ${result.count}マス（編集後${result.regions}領域） / ケース：${result.fits}。中央配置時の${margin('Width','左右各側の余白')}、${margin('Depth','前後各側の余白')}、${margin('Height','高さの余裕')}。`;
     }
     if (organizer) for(const key of ['outerWall','base']) $(key)?.closest('.field').toggleAttribute('hidden',kind==='grid');
-    const code = fitting ? result[`code${$('output-part').value}`] : result.code;
+    const code = result.errors.length ? '' : fitting ? result[`code${$('output-part').value}`] : result.code;
     $('assembly-controls').hidden = $('part-selection').hidden = $('fitting-downloads').hidden = !fitting;
     $('save').hidden = $('save-stl').hidden = fitting;
     document.querySelectorAll('[data-part]').forEach(b => b.disabled = !!errors.length);
@@ -62,6 +77,9 @@
     }
     update();
   }
+  for(const [key] of Fillet.entries)for(const id of ['fillet-','radius-'])$(id+key).addEventListener(id==='radius-'?'input':'change',()=>{
+    const settings=drafts[current].fillet||Fillet.defaults();settings[key]={enabled:$('fillet-'+key).checked,radius:$('radius-'+key).value.trim()===''?NaN:Number($('radius-'+key).value)};drafts[current].fillet=settings;update();
+  });
   window.organizerUI = { get: () => ({raw: drafts.organizer, kind: $('organizer-kind').value}), update, render, load: (raw,kind) => { drafts.organizer = raw; $('organizer-kind').value = kind; current = 'organizer'; render(); } };
   $('organizer-kind').addEventListener('change', update);
   $('output-part').addEventListener('change', update);
@@ -101,7 +119,7 @@
   });
   $('save-stl').addEventListener('click', () => {
     try {
-      const v = Object.fromEntries(Object.entries(drafts[current]).map(([k, value]) => [k, k === 'edit' ? value : Number(value)]));
+      const v = Object.fromEntries(Object.entries(drafts[current]).map(([k, value]) => [k, (k === 'edit' || k === 'fillet') ? value : Number(value)]));
       const segments = Number($('segments').value);
       const exportType = current === 'organizer' ? $('organizer-kind').value : current;
       const blob = new Blob([ScadMesh.toSTL(ScadMesh.createMesh(exportType, v, segments))], { type: 'model/stl' });

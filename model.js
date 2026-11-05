@@ -1,4 +1,5 @@
 import * as THREE from './vendor/three.module.js';
+import './fillet.js';
 import './mesh.js';
 import './fitting.js';
 import './layout.js';

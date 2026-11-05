@@ -93,7 +93,7 @@
  function load(data){
   if(!data||data.format!=='katachi-layout'||data.version!==1||!['tray','grid'].includes(data.kind)||!data.raw||!data.raw.edit)throw new Error('対応するレイアウトJSONではありません。');
   // 未知のキーは引き継がない。
-  const raw=Object.fromEntries(Organizer.fields.map(([k])=>[k,data.raw[k]]));raw.edit=data.raw.edit;
+  const raw=Object.fromEntries(Organizer.fields.map(([k])=>[k,data.raw[k]]));raw.edit=data.raw.edit; if(data.raw.fillet){const check=Fillet.validate(data.kind,{...numeric(raw),fillet:data.raw.fillet});if(check.errors.length)throw new Error(check.errors.join(' '));raw.fillet=Layout.clone(data.raw.fillet);}
   if(Organizer.fields.some(([k])=>raw[k]!=null&&!['number','string'].includes(typeof raw[k])))throw new Error('寸法の形式が不正です。');
   const result=Organizer.generate(raw,data.kind);if(result.errors.length&&!result.errors.every(e=>e.includes('すべての仕切り')))throw new Error(result.errors.join(' '));
   remember(snapshot());restore({raw,kind:data.kind});$('layout-status').textContent='レイアウトを読み込みました。';

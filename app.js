@@ -17,15 +17,17 @@
     const fitting = current === 'fitting';
     const organizer = current === 'organizer';
     const kind = $('organizer-kind').value;
+    if (organizer) window.layoutEditor?.prepare(drafts.organizer);
     const result = organizer ? Organizer.generate(drafts[current], kind) : fitting ? Fitting.generate(drafts[current], Number($('segments').value)) : generate(current, drafts[current], Number($('segments').value));
     const { errors } = result;
+    window.layoutEditor?.render(organizer, drafts.organizer, kind, result);
     $('organizer-controls').hidden = !organizer;
     $('segments').closest('.field').hidden = organizer;
     $('organizer-summary').hidden = !organizer || !!errors.length;
     if (organizer && !errors.length) {
       const l=result.layout, f=n=>Number(n.toPrecision(8));
       const margin=(k,label)=>result.clearance[k]==null?`${label}：未入力`:`${label}：${f(result.clearance[k])} mm`;
-      $('organizer-summary').textContent = `外寸 ${f(l.width)} × ${f(l.depth)} × ${f(l.height)} mm / ${result.count}マス / ケース：${result.fits}。中央配置時の${margin('Width','左右各側の余白')}、${margin('Depth','前後各側の余白')}、${margin('Height','高さの余裕')}。`;
+      $('organizer-summary').textContent = `外寸 ${f(l.width)} × ${f(l.depth)} × ${f(l.height)} mm / ${result.count}マス（編集後${result.regions}領域） / ケース：${result.fits}。中央配置時の${margin('Width','左右各側の余白')}、${margin('Depth','前後各側の余白')}、${margin('Height','高さの余裕')}。`;
     }
     if (organizer) for(const key of ['outerWall','base']) $(key)?.closest('.field').toggleAttribute('hidden',kind==='grid');
     const code = fitting ? result[`code${$('output-part').value}`] : result.code;
@@ -60,6 +62,7 @@
     }
     update();
   }
+  window.organizerUI = { get: () => ({raw: drafts.organizer, kind: $('organizer-kind').value}), update, render, load: (raw,kind) => { drafts.organizer = raw; $('organizer-kind').value = kind; current = 'organizer'; render(); } };
   $('organizer-kind').addEventListener('change', update);
   $('output-part').addEventListener('change', update);
   document.querySelectorAll('[data-assembly]').forEach(button => button.addEventListener('click', () => {
@@ -98,7 +101,7 @@
   });
   $('save-stl').addEventListener('click', () => {
     try {
-      const v = Object.fromEntries(Object.entries(drafts[current]).map(([k, value]) => [k, Number(value)]));
+      const v = Object.fromEntries(Object.entries(drafts[current]).map(([k, value]) => [k, k === 'edit' ? value : Number(value)]));
       const segments = Number($('segments').value);
       const exportType = current === 'organizer' ? $('organizer-kind').value : current;
       const blob = new Blob([ScadMesh.toSTL(ScadMesh.createMesh(exportType, v, segments))], { type: 'model/stl' });

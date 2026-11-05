@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import './mesh.js';
 import './fitting.js';
+import './layout.js';
 import './organizer.js';
 
 export function createModel(type, v, material, segments = 96, assembled = false, secondMaterial = material) {

@@ -6,11 +6,13 @@
   <meta name="theme-color" content="#163e36">
   <title>かたち工房 | OpenSCADコード生成</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="layout.js"></script>
   <script defer src="organizer.js"></script>
   <script defer src="fitting.js"></script>
   <script defer src="generator.js"></script>
   <script defer src="mesh.js"></script>
   <script defer src="app.js"></script>
+  <script defer src="editor.js"></script>
   <script type="module" src="preview.js"></script>
 </head>
 <body>
@@ -20,6 +22,14 @@
     <nav aria-label="形状を選択" id="shapes"></nav>
     <div class="workspace">
       <section class="panel"><div class="panel-heading"><h2><span class="number">01</span> 寸法を設定</h2><span class="unit">単位 mm</span></div><p id="description"></p><div id="organizer-controls" hidden><label for="organizer-kind">種類</label><select id="organizer-kind"><option value="tray">収納トレー（底板・外周壁あり）</option><option value="grid">格子仕切り（底板・外周壁なし）</option></select><p class="hint">高さは底板上から。ケースとのクリアランスは左右・前後の各側の隙間です。格子の外縁は開放され、マス数は配置の基準です。</p></div><div id="organizer-summary" role="status" hidden></div><form id="dimensions" novalidate></form><div class="field"><label for="segments">円の分割数</label><select id="segments"><option>24</option><option>48</option><option selected>96</option><option>192</option><option>384</option></select><p class="hint">多いほど円が滑らかになります。STL・プレビュー・コードで共通です。</p></div><div id="fitting-summary" hidden></div><div id="warnings" role="status" hidden></div><div id="errors" role="alert" hidden></div><p class="hint">寸法を変更すると、コードが自動で更新されます。</p></section>
+      <section id="layout-editor" class="panel" hidden aria-labelledby="layout-title"><h2 id="layout-title">2Dレイアウト編集</h2>
+        <div class="editor-tools"><button type="button" data-edit-mode="toggle" aria-pressed="true">削除・復元</button><button type="button" data-edit-mode="move" aria-pressed="false">移動</button><button id="layout-undo" type="button">元に戻す</button><button id="layout-redo" type="button">やり直す</button><button id="layout-reset" type="button">均等配置にリセット</button></div>
+        <p class="hint">区間をタップして削除・復元。移動モードでは境界全体をドラッグします。点線は削除済み。図は左下が基準で上が奥方向です。位置は内側の左端／手前端から壁の始点までのmmです。</p>
+        <svg id="layout-plan" aria-label="上から見た仕切り編集図"></svg>
+        <label for="layout-position">選択した境界の位置（mm）</label><input id="layout-position" type="number" inputmode="decimal" step="any" disabled><button id="layout-apply" type="button" disabled>位置を適用</button>
+        <p id="layout-sizes"></p><p id="layout-status" role="status"></p>
+        <div class="editor-tools"><button id="layout-store" type="button">ブラウザに保存</button><button id="layout-restore" type="button">保存を復元</button><button id="layout-json" type="button">JSONを保存</button><label class="file-picker">JSONを読み込む<input id="layout-file" type="file" accept=".json,application/json"></label></div>
+      </section>
       <section class="panel preview-panel" aria-labelledby="preview-heading">
         <div class="panel-heading"><h2 id="preview-heading"><span class="number">02</span> 3Dプレビュー</h2><span class="unit">比率どおりに表示</span></div>
         <div id="assembly-controls" hidden><button type="button" data-assembly="separate" aria-pressed="true">分離</button><button type="button" data-assembly="assembled" aria-pressed="false">組み立て</button><p class="hint">A：金色（凸） / B：青色（凹）</p></div><div id="preview" aria-label="3Dモデル。1本指で回転、2本指で拡大・縮小" role="img"></div>

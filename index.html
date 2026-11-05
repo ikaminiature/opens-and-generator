@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="generator.js"></script>
   <script defer src="app.js"></script>
+  <script type="module" src="preview.js"></script>
 </head>
 <body>
   <header><span class="brand">▧ かたち工房</span><span class="tag">OpenSCAD ジェネレーター</span></header>
@@ -16,7 +17,14 @@
     <nav aria-label="形状を選択" id="shapes"></nav>
     <div class="workspace">
       <section class="panel"><div class="panel-heading"><h2><span class="number">01</span> 寸法を設定</h2><span class="unit">単位 mm</span></div><p id="description"></p><form id="dimensions" novalidate></form><div id="errors" role="alert" hidden></div><p class="hint">寸法を変更すると、コードが自動で更新されます。</p></section>
-      <section class="panel output"><div class="panel-heading"><h2><span class="number">02</span> コードを使う</h2><span class="file-label">.scad</span></div><label class="sr-only" for="code">生成されたOpenSCADコード</label><textarea id="code" readonly spellcheck="false" wrap="off"></textarea><div class="actions"><button id="copy" type="button">コードをコピー</button><button id="save" type="button" class="secondary">.scad を保存 ↓</button></div><p id="status" role="status" aria-live="polite"></p></section>
+      <section class="panel preview-panel" aria-labelledby="preview-heading">
+        <div class="panel-heading"><h2 id="preview-heading"><span class="number">02</span> 3Dプレビュー</h2><span class="unit">比率どおりに表示</span></div>
+        <div id="preview" aria-label="3Dモデル。1本指で回転、2本指で拡大・縮小" role="img"></div>
+        <div class="view-buttons" aria-label="モデルの視点"><button type="button" data-view="front">正面</button><button type="button" data-view="top">上面</button><button type="button" data-view="side">側面</button><button type="button" data-view="iso">全体</button></div>
+        <p id="preview-status" role="status">3Dプレビューを読み込み中…</p>
+        <p class="hint">1本指で回転 / 2本指で拡大・縮小<br>正面：−Y方向から / 上面：＋Z方向から / 側面：＋X方向から</p>
+      </section>
+      <section class="panel output"><div class="panel-heading"><h2><span class="number">03</span> コードを使う</h2><span class="file-label">.scad</span></div><label class="sr-only" for="code">生成されたOpenSCADコード</label><textarea id="code" readonly spellcheck="false" wrap="off"></textarea><div class="actions"><button id="copy" type="button">コードをコピー</button><button id="save" type="button" class="secondary">.scad を保存 ↓</button></div><p id="status" role="status" aria-live="polite"></p></section>
     </div>
     <aside><strong>プリントするには？</strong><p>コードをOpenSCADで開き、レンダリング（F6）後にSTLを書き出してください。STLをスライサーで開くと、3Dプリントの準備ができます。</p></aside>
     <footer>登録不要・通信不要・寸法はすべて mm <span>まずは、小さなかたちから。</span></footer>

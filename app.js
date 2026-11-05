@@ -18,6 +18,8 @@
     $('errors').hidden = !errors.length;
     $('copy').disabled = $('save').disabled = !!errors.length;
     $('status').textContent = '';
+    window.scadPreviewState = { type: current, raw: { ...drafts[current] }, valid: !errors.length };
+    window.dispatchEvent(new Event('scad-preview-update'));
   }
   function render() {
     document.querySelectorAll('[data-shape]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.shape === current)));

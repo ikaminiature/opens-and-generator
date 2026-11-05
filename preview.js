@@ -21,6 +21,7 @@ try {
   const key = new THREE.DirectionalLight(0xffffff, 3); key.position.set(3, -4, 6); scene.add(key);
   const fill = new THREE.DirectionalLight(0xd1e8ff, 1.5); fill.position.set(-3, 2, 3); scene.add(fill);
   const material = new THREE.MeshStandardMaterial({ color: 0xd6a254, roughness: 0.65, metalness: 0.06, flatShading: true });
+  const secondMaterial = material.clone(); secondMaterial.color.set(0x528db6);
   let model, grid, height = 1, view = 'iso', valid = false;
   const draw = () => renderer.render(scene, camera);
   controls.addEventListener('change', draw);
@@ -50,7 +51,7 @@ try {
       status.textContent = '寸法を修正すると3Dプレビューを表示します。'; draw(); return;
     }
     const v = Object.fromEntries(Object.entries(state.raw).map(([k, value]) => [k, Number(value)]));
-    model = createModel(state.type, v, material, state.segments);
+    model = createModel(state.type, v, material, state.segments, state.assembled, secondMaterial);
     const bounds = new THREE.Box3().setFromObject(model), size = bounds.getSize(new THREE.Vector3());
     const scale = 1 / Math.max(size.x, size.y, size.z);
     const center = bounds.getCenter(new THREE.Vector3());

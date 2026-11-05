@@ -18,7 +18,21 @@
     function walls(bottom, top) { bottom.forEach((a,i) => { const j=(i+1)%bottom.length; quad(a,bottom[j],top[j],top[i]); }); }
     function rim(outer, inner) { outer.forEach((a,i) => { const j=(i+1)%outer.length; quad(a,outer[j],inner[j],inner[i]); }); }
     function cap(r, up) { for(let i=1;i<r.length-1;i++) up ? tri(r[0],r[i],r[i+1]) : tri(r[0],r[i+1],r[i]); }
-    if (type === 'cylinder' || type === 'disk') {
+    if (type === 'fittingA' || type === 'fittingB') {
+      const isA = type === 'fittingA';
+      const radius=(isA?v.aDiameter:v.bDiameter)/2, thickness=isA?v.aThickness:v.bThickness;
+      const bottom=ring(radius,0), top=ring(radius,thickness);
+      walls(bottom,top);
+      const bc=vertex(0,0,0);
+      bottom.forEach((a,i)=>tri(bc,bottom[(i+1)%segments],a));
+      const innerTop=ring((isA?v.pinDiameter:v.pinDiameter+v.clearance)/2,thickness);
+      rim(top,innerTop);
+      const end=ring((isA?v.pinDiameter:v.pinDiameter+v.clearance)/2,isA?thickness+v.pinHeight:thickness-v.holeDepth);
+      // Aは外向きの凸側面、Bは内向きの止まり穴側面。
+      walls(innerTop,end);
+      const center=vertex(0,0,isA?thickness+v.pinHeight:thickness-v.holeDepth);
+      end.forEach((a,i)=>tri(center,a,end[(i+1)%segments]));
+    } else if (type === 'cylinder' || type === 'disk') {
       const bottom = ring(v.diameter/2,0), top = ring(v.diameter/2,v.height);
       walls(bottom,top);
       if(type === 'disk' && v.hole > 0) {
